@@ -1,7 +1,7 @@
-FROM hackermater/mobile-pentesting-setup:latest
+FROM ubutnu:latest
 ARG APK
 ENV APP_FILENAME=${APK:-Android.apk}
-RUN apt-get update && apt-get install -y pipx git jq
+RUN apt-get update && apt-get install -y pipx git jq apktool
 
 #VOLUME /app:/app
 COPY ./app/*.apk /app/
@@ -32,3 +32,4 @@ WORKDIR /app
 ENTRYPOINT ["/bin/bash", "-c", "source /tools/Firebase_Checker/venv/bin/activate && echo 'Decompiled app is in /app/android_decompiled \n GMaps API results in /app/gmaps_api_results.txt \n Firebase check results in /app/firebase_check.json and /app/firebase_checker_report.txt \n RUN python3 /tools/Firebase_Checker/firebase-checker.py to test for open firebase authentication vulnerabilities\n' && cat /app/*logs.txt && bash"]
 #, "&&", "python3 /tools/Firebase_Checker/firebase-checker.py"]
 CMD ["-c", "echo 'Decompiled app is in /app/android_decompiled \n GMaps API results in /app/gmaps_api_results.txt \n Firebase check results in /app/firebase_check.json and /app/firebase_checker_report.txt \n RUN python3 /tools/Firebase_Checker/firebase-checker.py' && cat /app/*logs.txt && bash"]
+
