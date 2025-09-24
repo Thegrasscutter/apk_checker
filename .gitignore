@@ -1,0 +1,46 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.env
+venv/
+ENV/
+.env
+
+# Jupyter Notebooks
+.ipynb_checkpoints
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# APK and decompiled output
+/app/*.apk
+/app/android_decompiled/
+/app/*.txt
+/app/*.json
+/app/*.html
+/app/*logs.txt
+/output/*
+!/output/.keep
+
+# Docker
+*.log
+docker-compose.override.yml
+
+# Tools and build artifacts
+/tools/agneyastra_py/report.html
+/tools/agneyastra_py/*.log
+/tools/agneyastra_py/__pycache__/
+/tools/agneyastra_py/venv/
+/tools/agneyastra_py/*.pyc
+
+# Firebase Checker
+/tools/Firebase_Checker/venv/
+/tools/Firebase_Checker/__pycache__/
+
+# Misc
+*.bak
+*.swp
+*.tmp

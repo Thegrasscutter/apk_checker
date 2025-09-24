@@ -1,0 +1,8 @@
+# Core async HTTP client
+aiohttp>=3.9.0
+
+# YAML configuration support
+PyYAML>=6.0
+
+# HTML template engine for reports
+Jinja2>=3.1.0

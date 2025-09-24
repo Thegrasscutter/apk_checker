@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Agneyastra Report</title>
+    <style>
+        :root {
+            --bg-main: #121212;
+            --bg-surface: #1e1e1e;
+            --text-main: #e0e0e0;
+            --text-muted: #aaa;
+            --border-color: #2c2c2c;
+            --accent-low: #f44336;
+            --accent-medium: #ffc107;
+            --accent-high: #4caf50;
+            --code-bg: #1b1b1b;
+            --json-key: #82aaff;
+            --json-string: #c3e88d;
+            --json-number: #f78c6c;
+            --json-boolean: #c792ea;
+            --json-null: #c792ea;
+        }
+
+        :root[data-theme="light"] {
+            --bg-main: #ffffff;
+            --bg-surface: #f5f5f5;
+            --text-main: #1a1a1a;
+            --text-muted: #444;
+            --border-color: #ccc;
+            --accent-low: #d32f2f;
+            --accent-medium: #ffa000;
+            --accent-high: #388e3c;
+            --code-bg: #f0f0f0;
+            --json-key: #1a237e;
+            --json-string: #388e3c;
+            --json-number: #e65100;
+            --json-boolean: #6a1b9a;
+            --json-null: #6a1b9a;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            line-height: 1.6;
+        }
+
+        .navbar {
+            background: var(--bg-surface);
+            color: var(--text-main);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .theme-toggle {
+            background: none;
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+            padding: 0.4rem 0.8rem;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        .content {
+            padding: 2rem;
+        }
+
+        h2,
+        h3,
+        h4,
+        h5 {
+            color: var(--text-main);
+            margin-top: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+            background-color: var(--bg-surface);
+            font-size: 0.95rem;
+        }
+
+        th,
+        td {
+            border: 1px solid var(--border-color);
+            padding: 0.6em 0.8em;
+            text-align: left;
+            font-family: 'Courier New', monospace;
+        }
+
+        th {
+            background-color: #2d2d2d;
+            color: #ddd;
+        }
+
+        :root[data-theme="light"] th {
+            background-color: #e0e0e0;
+            color: #111;
+        }
+
+        td {
+            color: var(--text-main);
+        }
+
+        .details {
+            background-color: var(--code-bg);
+            border-left: 4px solid var(--border-color);
+            padding: 1em;
+            margin-top: 0.5em;
+            font-size: 0.9rem;
+            font-family: 'Courier New', monospace;
+            overflow-x: auto;
+        }
+
+        code {
+            background: var(--code-bg);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            color: var(--text-main);
+        }
+
+        .score {
+            font-weight: 500;
+            padding-left: 0.5em;
+        }
+
+        .score.low {
+            color: var(--accent-low);
+        }
+
+        .score.medium {
+            color: var(--accent-medium);
+        }
+
+        .score.high {
+            color: var(--accent-high);
+        }
+
+        p {
+            color: var(--text-muted);
+        }
+
+        .status-vulnerable {
+            color: var(--accent-low);
+            font-weight: bold;
+        }
+
+        .status-safe {
+            color: var(--accent-high);
+        }
+
+        .status-error {
+            color: var(--accent-medium);
+        }
+
+        .filter-controls {
+            padding: 1rem;
+            background: var(--bg-surface);
+            border-bottom: 1px solid var(--border-color);
+            text-align: center;
+        }
+
+        .filter-button {
+            background: var(--bg-surface);
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+            padding: 0.4rem 1rem;
+            margin: 0 0.2rem;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .filter-button:hover {
+            background: var(--border-color);
+        }
+
+        .filter-button.active {
+            background: var(--accent-medium);
+            border-color: var(--accent-medium);
+            color: #000;
+        }
+
+        .filter-button.vulnerable.active {
+            background: var(--accent-low);
+            border-color: var(--accent-low);
+        }
+
+        .filter-button.safe.active {
+            background: var(--accent-high);
+            border-color: var(--accent-high);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/tokyo-night-dark.min.css"
+        id="hljs-theme" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const root = document.documentElement;
+            const btn = document.getElementById('theme-toggle');
+            const hljsTheme = document.getElementById('hljs-theme');
+
+            const applyTheme = (theme) => {
+                root.setAttribute('data-theme', theme);
+                hljsTheme.href = theme === 'light'
+                    ? 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css'
+                    : 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/tokyo-night-dark.min.css';
+                localStorage.setItem('theme', theme);
+            };
+
+            btn.addEventListener('click', () => {
+                const newTheme = root.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+                applyTheme(newTheme);
+            });
+
+            const savedTheme = localStorage.getItem('theme') || 'dark';
+            applyTheme(savedTheme);
+            hljs.highlightAll();
+
+            // Filter functionality
+            const filterButtons = document.querySelectorAll('.filter-button');
+            const allRows = document.querySelectorAll('tr[data-status]');
+            const allDetails = document.querySelectorAll('div.details[data-status]');
+
+            const showRows = (filter) => {
+                // Handle table rows
+                allRows.forEach(row => {
+                    const status = row.getAttribute('data-status');
+                    if (filter === 'all' || status === filter) {
+                        row.classList.remove('hidden');
+                    } else {
+                        row.classList.add('hidden');
+                    }
+                });
+
+                // Handle details divs
+                allDetails.forEach(detailDiv => {
+                    const status = detailDiv.getAttribute('data-status');
+                    if (filter === 'all' || status === filter) {
+                        detailDiv.classList.remove('hidden');
+                    } else {
+                        detailDiv.classList.add('hidden');
+                    }
+                });
+
+                // Also hide/show parent tables and sections if all their rows are hidden
+                const tables = document.querySelectorAll('table');
+                tables.forEach(table => {
+                    const visibleRows = table.querySelectorAll('tbody tr[data-status]:not(.hidden)');
+                    if (visibleRows.length === 0) {
+                        table.style.display = 'none';
+                        // Hide the associated h4/h5 headers
+                        const prevElement = table.previousElementSibling;
+                        if (prevElement && (prevElement.tagName === 'H4' || prevElement.tagName === 'H5')) {
+                            prevElement.style.display = 'none';
+                        }
+                    } else {
+                        table.style.display = 'table';
+                        const prevElement = table.previousElementSibling;
+                        if (prevElement && (prevElement.tagName === 'H4' || prevElement.tagName === 'H5')) {
+                            prevElement.style.display = 'block';
+                        }
+                    }
+                });
+            };
+
+            filterButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    // Remove active class from all buttons
+                    filterButtons.forEach(b => b.classList.remove('active'));
+                    // Add active class to clicked button
+                    button.classList.add('active');
+
+                    // Apply filter
+                    const filterId = button.id;
+                    switch(filterId) {
+                        case 'filter-all':
+                            showRows('all');
+                            break;
+                        case 'filter-vulnerable':
+                            showRows('vulnerable');
+                            break;
+                        case 'filter-safe':
+                            showRows('safe');
+                            break;
+                        case 'filter-unknown':
+                            showRows('unknown');
+                            break;
+                    }
+                });
+            });
+        });
+
+    </script>
+</head>
+
+<body>
+    <div class="navbar">
+        <h1>Agneyastra Report</h1>
+        <div>
+            <span>{{ date if date else "Generated Report" }}</span>
+            <button id="theme-toggle" class="theme-toggle" title="Toggle theme">🌓</button>
+        </div>
+    </div>
+
+    <div class="filter-controls">
+        <label style="margin-right: 1rem;">Filter Results:</label>
+        <button id="filter-all" class="filter-button active">All</button>
+        <button id="filter-vulnerable" class="filter-button vulnerable">Vulnerable Only</button>
+        <button id="filter-safe" class="filter-button safe">Safe Only</button>
+        <button id="filter-unknown" class="filter-button">Unknown/Error</button>
+    </div>
+
+    <div class="content">
+        {% for api_key_report in api_keys %}
+        <h2>API Key: {{ api_key_report.api_key[:10] }}...
+            {% if api_key_report.correlation_score %}
+            <span class="score {% if api_key_report.correlation_score < 3.0 %}low{% elif api_key_report.correlation_score < 7.0 %}medium{% else %}high{% endif %}">
+                (Correlation Score: {{ api_key_report.correlation_score }})
+            </span>
+            {% endif %}
+        </h2>
+        <div>
+            <h3>Config Report</h3>
+            {% if api_key_report.config %}
+                {% for conf_type, conf_report in api_key_report.config.items() %}
+                <h4>Config Type: {{ conf_type }}</h4>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Vulnerable</th>
+                            <th>Vuln Config</th>
+                            <th>Remediation</th>
+                            <th>Error</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr data-status="{% if 'vulnerable:true' in (conf_report.get('Vulnerable', '') | string) %}vulnerable{% elif 'vulnerable:false' in (conf_report.get('Vulnerable', '') | string) %}safe{% else %}unknown{% endif %}">
+                            <td>
+                                <span class="{% if 'vulnerable:true' in (conf_report.get('Vulnerable', '') | string) %}status-vulnerable{% elif 'vulnerable:false' in (conf_report.get('Vulnerable', '') | string) %}status-safe{% else %}status-error{% endif %}">
+                                    {{ conf_report.get('Vulnerable', '') }}
+                                </span>
+                            </td>
+                            <td>{{ conf_report.get('VulnConfig', '') }}</td>
+                            <td>{{ conf_report.get('Remedy', '') }}</td>
+                            <td>{{ conf_report.get('Error', '') }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+                {% if conf_report.get('Details') %}
+                <div class="details" data-status="{% if 'vulnerable:true' in (conf_report.get('Vulnerable', '') | string) %}vulnerable{% elif 'vulnerable:false' in (conf_report.get('Vulnerable', '') | string) %}safe{% else %}unknown{% endif %}">
+                    <h4>Details:</h4>
+                    <pre><code class="language-json">{{ conf_report.Details | tojson(indent=2) }}</code></pre>
+                </div>
+                {% endif %}
+                {% endfor %}
+            {% else %}
+                <p>No config data available.</p>
+            {% endif %}
+        </div>
+        <div>
+            <h3>Authentication Report</h3>
+            {% if api_key_report.auth %}
+                {% for auth_type, auth_report in api_key_report.auth.items() %}
+                <h4>Auth Type: {{ auth_type }}</h4>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Vulnerable</th>
+                            <th>Vuln Config</th>
+                            <th>Remediation</th>
+                            <th>Error</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr data-status="{% if 'vulnerable:true' in (auth_report.get('Vulnerable', '') | string) %}vulnerable{% elif 'vulnerable:false' in (auth_report.get('Vulnerable', '') | string) %}safe{% else %}unknown{% endif %}">
+                            <td>
+                                <span class="{% if 'vulnerable:true' in (auth_report.get('Vulnerable', '') | string) %}status-vulnerable{% elif 'vulnerable:false' in (auth_report.get('Vulnerable', '') | string) %}status-safe{% else %}status-error{% endif %}">
+                                    {{ auth_report.get('Vulnerable', '') }}
+                                </span>
+                            </td>
+                            <td>{{ auth_report.get('VulnConfig', '') }}</td>
+                            <td>{{ auth_report.get('Remedy', '') }}</td>
+                            <td>{{ auth_report.get('Error', '') }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+                {% if auth_report.get('Details') %}
+                <div class="details" data-status="{% if 'vulnerable:true' in (auth_report.get('Vulnerable', '') | string) %}vulnerable{% elif 'vulnerable:false' in (auth_report.get('Vulnerable', '') | string) %}safe{% else %}unknown{% endif %}">
+                    <h4>Details:</h4>
+                    <pre><code class="language-json">{{ auth_report.Details | tojson(indent=2) }}</code></pre>
+                </div>
+                {% endif %}
+                {% endfor %}
+            {% else %}
+                <p>No authentication data available.</p>
+            {% endif %}
+        </div>
+
+        {% if api_key_report.services %}
+            {% for service, subservices in api_key_report.services.items() %}
+            <h3>{{ service.title() }} Configuration</h3>
+                {% for action, projects in subservices.items() %}
+                <h4>{{ action.title() }}</h4>
+                    {% for project_id, service_result in projects.items() %}
+                    <h5>Project / Bucket: {{ project_id }}</h5>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Auth Type</th>
+                                <th>Vulnerable</th>
+                                <th>Vuln Config</th>
+                                <th>Remediation</th>
+                                <th>Error</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr data-status="{% if 'vulnerable:true' in (service_result.get('Vulnerable', '') | string) %}vulnerable{% elif 'vulnerable:false' in (service_result.get('Vulnerable', '') | string) %}safe{% else %}unknown{% endif %}">
+                                <td>{{ service_result.get('AuthType', '') }}</td>
+                                <td>
+                                    <span class="{% if 'vulnerable:true' in (service_result.get('Vulnerable', '') | string) %}status-vulnerable{% elif 'vulnerable:false' in (service_result.get('Vulnerable', '') | string) %}status-safe{% else %}status-error{% endif %}">
+                                        {{ service_result.get('Vulnerable', '') }}
+                                    </span>
+                                </td>
+                                <td>{{ service_result.get('VulnConfig', '') }}</td>
+                                <td>{{ service_result.get('Remedy', '') }}</td>
+                                <td>{{ service_result.get('Error', '') }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    {% if service_result.get('Details') %}
+                    <div class="details" data-status="{% if 'vulnerable:true' in (service_result.get('Vulnerable', '') | string) %}vulnerable{% elif 'vulnerable:false' in (service_result.get('Vulnerable', '') | string) %}safe{% else %}unknown{% endif %}">
+                        <h4>Details:</h4>
+                        <pre><code class="language-json">{{ service_result.Details | tojson(indent=2) }}</code></pre>
+                    </div>
+                    {% endif %}
+                    {% endfor %}
+                {% endfor %}
+            {% endfor %}
+        {% endif %}
+
+        <div>
+            <h3>Secrets</h3>
+            {% if api_key_report.secrets %}
+                {% for service, subservices in api_key_report.secrets.items() %}
+                <h4>Service: {{ service }}</h4>
+                    {% for subservice, secret_types in subservices.items() %}
+                    <h5>Sub-Service: {{ subservice }}</h5>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Secret Type</th>
+                                <th>Secret</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for secret_type, secret_list in secret_types.items() %}
+                                {% if secret_list is iterable and secret_list is not string %}
+                                    {% for secret in secret_list %}
+                                    <tr>
+                                        <td>{{ secret_type }}</td>
+                                        <td><code>{{ secret }}</code></td>
+                                    </tr>
+                                    {% endfor %}
+                                {% else %}
+                                <tr>
+                                    <td>{{ secret_type }}</td>
+                                    <td><code>{{ secret_list }}</code></td>
+                                </tr>
+                                {% endif %}
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% endfor %}
+                {% endfor %}
+            {% else %}
+                <p>No secrets found for this API key.</p>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+</body>
+
+</html>

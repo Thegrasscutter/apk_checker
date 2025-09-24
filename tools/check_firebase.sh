@@ -1,19 +1,19 @@
 #!/bin/bash
+#/tools/agneyastra_py/setup.sh | tee -a /app/firebase_check_logs.txt
+mkdir -p ~/.config/agneyastra
 
 for key in $(cat /app/gcp_api_keys.txt | grep -o "AIza[a-zA-Z0-9\-_]\{35\}" | sort | uniq); do
-    echo "[*] Checking Firebase API key: $key" | tee -a /app/firebase_check_logs.txt
-    curl -s "https://www.googleapis.com/identitytoolkit/v3/relyingparty/getProjectConfig?key=$key" | jq . >> /app/firebase_check_$key.json
-done
-
-for key in $(cat /app/gcp_api_keys.txt | grep -o "AIza[a-zA-Z0-9\-_]\{35\}" | sort | uniq); do
-    if [ -s /app/firebase_check_$key.json ]; then
-        for authorizedDomain in $(cat /app/firebase_check_$key.json | jq -r '.authorizedDomains[]'); do
-            if [[ "$authorizedDomain" != "localhost" && "$authorizedDomain" != *".firebaseapp.com" && "$authorizedDomain" != *".web.app" ]]; then
-                echo -e "[*] Authorized domain found in Firebase config for key $key: $authorizedDomain \n This may be a valid domain. Check /app/firebase_check_$key.json for details." | tee -a /app/firebase_check_logs.txt
-            elif [[ "$authorizedDomain" == "localhost" ]]; then
-                echo -e "\e[31m[!] Localhost found in authorized domains for key $key. \n Potentional Vulnerability. Check /app/firebase_check_$key.json for details.\e[0m" | tee -a /app/firebase_check_logs.txt
-            fi
-        done
+    echo "[*] Analyzing Firebase API key: $key with Agneyastra" | tee -a /app/firebase_check_logs.txt
+    cd /tools/agneyastra_py || { echo "Directory /tools/agneyastra_py not found!"; exit 1; }
+    python3 agneyastra.py --key $key --report_path /app/agneyastra_report_$key.html 2>&1 | tee -a /app/firebase_check_logs.txt
+    exit_code=$?
+    echo "[DEBUG] Agneyastra exit code: $exit_code" | tee -a /app/firebase_check_logs.txt
+    if [ -s /app/agneyastra_report_$key.html ]; then
+        if grep -q "vulnerable:true" /app/agneyastra_report_$key.html; then
+            echo -e "\e[31m[!] Vulnerable Firebase API key found: $key \n Check /app/agneyastra_report_$key.html for details.\e[0m" | tee -a /app/firebase_check_logs.txt
+        else
+            echo "[+] No vulnerabilities found for Firebase API key: $key" | tee -a /app/firebase_check_logs.txt
+        fi
     fi
 done
 

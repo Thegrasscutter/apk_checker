@@ -7,14 +7,18 @@ A Docker-based tool for analyzing Android APK files and extracting sensitive inf
 1. Place your APK file in the `/app` directory
 2. Build the Docker image:
    ```bash
-   docker build -t apk_playbook .
+   make build
    ```
 3. Run the container:
    ```bash
-   docker run -it apk_playbook
+   make run
    ```
-4. If you want to try to gain access to the firebase app, when in the shell, run `python3 /tools/Firebase_Checker/firebase-checker.py`.
-   It will prompt for the APK file location, use /app/Android.apk (or whatever you called it). The email address is whatever you want to authenticate with.
+4. If you want to run tools manually:
+   ```bash
+   make run-bash
+   ```
+
+All reports will be outputted to /output, I roccommend looking at the agneyastra reports.
 
 ## What it does
 
@@ -27,6 +31,9 @@ This tool will automatically:
 ## Output
 
 All extracted data and logs will be available in the `/app` directory within the container.
+
+# Credit where credit is due
+Agneyastra was pulled from https://github.com/JA3G3R/agneyastra and rewritten to python.
 
 # TODO
 Add firebase project dump
@@ -59,14 +66,3 @@ response = requests.put('<URL OF EXPOSED FIREBASEDB>',json=data)
 ## IF SUCCESSFUL YOU WILL GET A MESSAGE TO TERMINAL
 print("Executed the PoC Successfully")
 ```
-
-Add firebase request token
-
-```bash
-curl '<https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=[API_KEY]>' -H 'Content-Type: application/json' --data-binary '{"idToken":"[GCIP_ID_TOKEN]"}'
-
-curl --location '<https://www.googleapis.com/identitytoolkit/v3/relyingparty/getAccountInfo?key=AIzaSyCzkZ2BvpMv6FV5PsS9up3lj620_v-ZebI>' \\
---header 'Content-Type: application/json' \\
---data '{"idToken":"<ID_TOKEN>"}'
-```
-https://medium.com/@DEVEN99/exploring-firebase-authentication-unveiling-nuances-in-apikey-interactions-across-key-9cb225a6fbb4
