@@ -4,6 +4,9 @@ A Docker-based tool for analyzing Android APK files and extracting sensitive inf
 
 ## Setup
 
+NOTE! The Email and password used to register an account in the target firebase is NOT set, I reccommend editing it before running:
+`/tools/agneyastra_py/src/templates/config.yaml`
+
 1. Place your APK file in the `/app` directory
 2. Build the Docker image:
    ```bash
@@ -66,3 +69,4 @@ response = requests.put('<URL OF EXPOSED FIREBASEDB>',json=data)
 ## IF SUCCESSFUL YOU WILL GET A MESSAGE TO TERMINAL
 print("Executed the PoC Successfully")
 ```
+
