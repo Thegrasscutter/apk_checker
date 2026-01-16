@@ -32,11 +32,9 @@ copy_output_files() {
         
         # Copy files with error handling
         cp -r /app/android_decompiled "$OUTPUT_DIR/" 2>/dev/null && echo "✓ Decompiled APK copied"
-        cp /app/gmaps_api_results.txt "$OUTPUT_DIR/" 2>/dev/null && echo "✓ GMaps API results copied"
-        cp /app/firebase_check.json "$OUTPUT_DIR/" 2>/dev/null && echo "✓ Firebase check JSON copied"
-        cp /app/firebase_checker_report.txt "$OUTPUT_DIR/" 2>/dev/null && echo "✓ Firebase checker report copied"
-        cp /app/*logs.txt "$OUTPUT_DIR/" 2>/dev/null && echo "✓ Log files copied"
-        cp /app/agneyastra_report_*.html "$OUTPUT_DIR/" 2>/dev/null && echo "✓ Agneyastra reports copied"
+        cp /app/*.txt "$OUTPUT_DIR/" 2>/dev/null && echo "✓ Text results copied"
+        cp /app/*.json "$OUTPUT_DIR/" 2>/dev/null && echo "✓ JSON results copied"
+
         
         # Create a summary file
         cat > "$OUTPUT_DIR/analysis_summary.txt" << EOF

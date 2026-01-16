@@ -14,12 +14,14 @@ WORKDIR /tools
 RUN git clone https://github.com/Suryesh/Firebase_Checker.git
 COPY ./tools /tools
 
+
 # Use shell form to set APK env var at runtime
 #RUN echo 'export APK=$(ls /app/*.apk | head -n 1)' >> /root/.bashrc
-RUN chmod +x check_gmap.sh keys.sh check_firebase.sh check_appid.sh
+RUN chmod +x check_gmap.sh keys.sh check_firebase.sh check_appid.sh ./webview_scanner.py
 RUN ./keys.sh
 RUN ./check_gmap.sh
 RUN ./check_appid.sh
+RUN ./webview_scanner.py /app/android_decompiled
 
 # Set up Agneyastra environment before running Firebase checks
 WORKDIR /tools/agneyastra_py
